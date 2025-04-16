@@ -1,42 +1,171 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Audio Recorder</title>
+    <title>Book Knowledge App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 600px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form, ul {
+            margin-bottom: 20px;
+        }
+
+        label, button {
+            display: block;
+            margin: 10px auto;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin: 0 auto;
+            display: block;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .flash-error {
+            color: red;
+        }
+
+        .flash-success {
+            color: green;
+        }
+
+        audio {
+            margin-top: 5px;
+        }
+
+        #timer {
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Book Knowledge App</h1>
 
-    <table style="width:100%">
-        <tr>
-            <td style="width:50%">
-                <h2>Record and Upload Audio</h2>
-
-                <button id="record">Record</button>
-                <button id="stop">Stop</button>
-                <span id="timer">00:00</span>
-                <audio id="audio"></audio>
-                <form id="uploadForm" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="audio_data" id="audioData">
-                </form>
-                <script src="script.js"></script>
-                <hr>
-
-                <h2>Recorded Files</h2>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
                 <ul>
-                    {% for file in files %}
-                    <li> 
-                        <audio controls>
-                            <source src="{{ url_for('uploaded_file', folder='uploads', filename=file) }}">
-                            Your browser does not support the audio element.
-                        </audio><br>
-                        {{ file }}
-                        <a href="{{ url_for('uploaded_file', folder='uploads', filename=file) }}.txt">Transcript</a>
-                    </li>
+                    {% for message in messages %}
+                        <li class="{% if 'Error' in message %}flash-error{% else %}flash-success{% endif %}">
+                            {{ message }}
+                        </li>
                     {% endfor %}
                 </ul>
-            </td>
-            
-        </tr>
-    </table>
+            {% endif %}
+        {% endwith %}
 
+        <!-- File upload form -->
+        <h2>Upload PDF or Audio</h2>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <label for="file">Select PDF or WAV:</label>
+            <input type="file" name="file" id="file" accept=".pdf,.wav" required>
+            <button type="submit">Upload</button>
+        </form>
+
+        <!-- Audio recording -->
+        <h2>Record Audio Question</h2>
+        <button id="record">Record</button>
+        <button id="stop" disabled>Stop</button>
+        <span id="timer">00:00</span>
+        <audio id="audio" controls></audio>
+
+        <!-- Process files -->
+        <h2>Generate Answer</h2>
+        <form action="/process" method="POST">
+            <button type="submit">Get Answer</button>
+        </form>
+
+        <!-- Uploaded files -->
+        <h2>Uploaded Files</h2>
+        <ul>
+            {% for file in uploaded_files %}
+                <li>
+                    {% if file.endswith('.wav') %}
+                        <audio controls>
+                            <source src="/Uploads/{{ file }}" type="audio/wav">
+                            Your browser does not support audio.
+                        </audio><br>
+                        {{ file }}
+                    {% elif file.endswith('.pdf') %}
+                        <a href="/Uploads/{{ file }}" target="_blank">📄 {{ file }}</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Generated responses -->
+        <h2>Generated Responses</h2>
+        <ul>
+            {% for file in tts_files %}
+                <li>
+                    {% if file.endswith('.wav') %}
+                        <audio controls>
+                            <source src="/tts/{{ file }}" type="audio/wav">
+                            Your browser does not support audio.
+                        </audio><br>
+                        {{ file }}
+                    {% elif file.endswith('.txt') %}
+                        <a href="/tts/{{ file }}" target="_blank">{{ file }}</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script src="/script.js"></script>
 </body>
 </html>

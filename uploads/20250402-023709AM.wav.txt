@@ -1,2 +1,0 @@
-Input Text: This is not working so well.
-Sentiment Analysis: negative 

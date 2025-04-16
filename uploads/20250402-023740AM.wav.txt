@@ -1,2 +1,0 @@
-Input Text: I like coffee.
-Sentiment Analysis: positive 

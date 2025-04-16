@@ -1,2 +1,0 @@
-Input Text: I am okay.
-Sentiment Analysis: neutral 
